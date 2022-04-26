@@ -53,39 +53,10 @@ struct s_entity
 	int	vy; //direction y of entity
 	int	near_base; //0 if no target, 1 if targeting a base
 	int	threat_for; //0 if not a threat, 1 if threat for ally base, 2 if threat for enemy base
+    int threat;
     int targetted;
     int distance;
 };
-
-//checkt of ie in range is
-// int	is_in_range(int target_x, int target_y, int mark_x, int mark_y, int radius)
-// {
-// 	float	distances;
-// 	float	distance_sqrt;
-
-// 	distance_sqrt = distance(target_x, target_y, mark_x, mark_y);
-// 	distances = distance_sqrt - radius;
-// 	if (distances <= 0)
-// 		return (1);
-// 	return (0);
-// }
-
-// int	count_entity_in_range(t_base *base, t_entity *entity, int mark_x, int mark_y, int radius)
-// {
-// 	int	in_range = 0;
-
-// 	for (int i = 0; i < base->entity_count; i++)
-// 	{
-// 		if (entity[i].type == 0 || entity[i].type == 2)
-// 		{
-// 			if (is_in_range(entity[i].x, entity[i].y, mark_x, mark_y, radius))
-// 				in_range++;
-// 		}
-// 	}
-// 	return (in_range);
-// }
-
-
 int distance(int x1, int y1, int x, int y)
 {  
     int afstand;
@@ -100,33 +71,64 @@ int distance(int x1, int y1, int x, int y)
     return (sqrt(afstandy+afstandx));
 }
 
-int distancetobase(int id_monster, int id_hero, t_base base, t_entity *entity, t_hero *hero, int mijn)
+int distancetobase(int counter, t_base base, t_entity *entity, t_hero *hero, int mijn)
 {
     int distances;
 
     distances = 0;
-    if (id_hero == -1)
+    if (mijn == 1)
     {
-        if (mijn == 1)
-        {
-            distances = distance(entity[id_monster].x, entity[id_monster].vy, base_x, base_y);
-        }
-        else
-        {
-            distances = distance(entity[id_monster].x, entity[id_monster].vy, base.e_x, base.e_y);
-        }
+        distances = distance(entity[counter].x, entity[counter].y, base_x, base_y);
     }
-    if (id_monster == -1)
+    else
     {
-        if (mijn == 1)
-            distances = distance(hero[id_hero].x, hero[id_hero].y, base_x, base_y);
-        else
-            distances = distance(hero[id_hero].x, hero[id_hero].y, base.e_x, base.e_y);
+        distances = distance(entity[counter].x, entity[counter].y, base.e_x, base.e_y);
     }
     return (distances);
 }
 
-int hero_to_enemy(int id_monster, t_hero *hero, t_entity *entity)
+int distanceto(int id, int id_2, t_base base, t_entity *entity, t_hero *hero)
+{
+    int distances;
+
+    distances = 0;
+    distances = distance(entity[id_2].x, entity[id_2].y, entity[id].x, entity[id].y);
+    return (distances);
+}
+
+int in_range(int id, int id_2, t_base base, t_entity *entity, t_hero *hero, int range)
+{
+    if (distanceto(id, id_2, base, entity, hero) <= range)
+    {
+        return (1);
+    }
+    else
+    {
+        return (0);
+    }
+}
+
+int count_in_range(int id, t_base base, t_entity *entity, t_hero *hero, int range)
+{
+    int i;
+    int count;
+
+    count = 0;
+    i = 0;
+    while (i < base.entity_count)
+    {
+        if (entity[i].type == 0 || entity[i].type == 2)
+        {
+            if (in_range(id, i, base, entity, hero, range))
+                count++;
+        }
+        i++;
+    }
+    return (count);
+}
+
+
+int hero_closest_counter(int id_hero, t_base base, t_entity *entity, t_hero *hero)
 {
     int i;
     int j;
@@ -134,66 +136,72 @@ int hero_to_enemy(int id_monster, t_hero *hero, t_entity *entity)
 
     i = 0;
     j = 20000;
-    while (i < 3 && hero[i].target == 0)
+    k = 0;
+    while (i < base.entity_count )
     {
-        if (j > distance(hero[i].x, hero[i].y, entity[id_monster].x, entity[id_monster].y))
-            j = i;
+        if (j > distance(entity[id_hero].x, entity[id_hero].y, entity[i].x, entity[i].y) && entity[i].type == 0)
+        {
+            j = distance(entity[id_hero].x, entity[id_hero].y, entity[i].x, entity[i].y);
+            k = i;
+        }
+        i++;
+    }
+    return (k);
+}
+
+int closest_hero(int counter, t_base base, t_hero *hero, t_entity *entity)
+{
+    int i;
+    int j;
+    int k;
+    int id_hero;
+
+    i = 0;
+    j = 20000;
+    id_hero = 0;
+    while (id_hero < 3 && hero[i].target != 1 && base.entity_count > 2)
+    {
+        if (j > distance(entity[id_hero].x, entity[id_hero].y, entity[counter].x, entity[counter].y))
+        {
+            j = distance(entity[id_hero].x, entity[id_hero].y, entity[counter].x, entity[counter].y);
+            k = id_hero;
+        }
+        id_hero++;
+    }
+    return (k);
+}
+
+int hero_distance_enemy(int counter, int id_hero, t_base base, t_hero *hero, t_entity *entity)
+{
+    int i;
+    int j;
+    int k;
+
+    i = 0;
+    j = 20000;
+    while (i < base.entity_count && hero[i].target != 1)
+    {
+        if (j > distance(hero[id_hero].x, hero[id_hero].y, entity[counter].x, entity[counter].y))
+            j = distance(hero[id_hero].x, hero[id_hero].y, entity[counter].x, entity[counter].y);
+        i++;
     }
     return (j);
 }
 
-void spellbasenw()
-{
-    printf("SPELL WIND 9000 9000\n");
-}
-
-void spellse()
-{
-    printf("SPELL WIND 14300 5400\n");
-}
-
-
-// void offensive(t_base base, t_entity *entity, t_hero *hero, int bas, int time)
-// {
-//     int flag;
-//     int hero_i;
-//     int spell;
-//     int id_monster;
-
-//     id_monster = -1;
-//     flag = 0;
-//     hero_i = 0;
-//     spell = 0;
-
-//     id_monster = closest(base, entity, hero, base.x, base.time, 1);
-//     fprintf(stderr, "id offensive monster = %d", id_monster);
-//     if (distance(hero[2].x, hero[2].y, entity[id_monster].vx, entity[id_monster].vy) < 1280 && entity[id_monster].type == 0 && id_monster > 0)
-//         printf("wind %d %d\n", WIDTH, HEIGHT);//entity[id_monster].id);
-//     else if (distance(hero[2].x, hero[2].y, base.e_x, base.e_y) > 5000)
-//         printf("MOVE 14600 6000\n");
-//     // else if (distance(hero[2].x, hero[2].y, entity[id_monster].vx, entity[id_monster].vy) > 2200 && id_monster > 0)
-//     //     printf("MOVE %d %d\n", entity[id_monster].vx, entity[id_monster].vy);
-//     else if (distance(entity[id_monster].vx, entity[id_monster].vy, base.e_x, base.e_y) < 7200)
-//         printf("MOVE %d, %d", entity[id_monster].vx, entity[id_monster].vy);
-//     else
-//         printf("MOVE 14600 6000\n");
-//     //bas 2 closest
-// }
-
 int closestenemy(t_base base, t_entity *entity, t_hero *hero)
 {
     int i;
-    int distance;
+    int dist;
     int p;
 
-    i = 0;
+    i = 2;
     p = 0;
-    distance = 100000;
+    dist = 10000;
     while (i < base.entity_count)
-    {
-        if (distance > distancetobase(i, -1, base, entity, hero, 0))
+    {   
+        if (dist > distancetobase(i, base, entity, hero, 1) && entity[i].type == 0 && entity[i].targetted == 0)
         {
-            distance = distancetobase(i, -1, base, entity, hero, 0);
+            dist = distancetobase(i, base, entity, hero, 1);
             p = i;
         }
         i++;
@@ -201,152 +209,214 @@ int closestenemy(t_base base, t_entity *entity, t_hero *hero)
     return (p);
 }
 
-void attack(t_base base, t_entity *entity, t_hero *hero)
+int closestenemytohero(t_base base, t_entity *entity, t_hero *hero, int hero_id)
 {
     int i;
-    int bal;
+    int dist;
     int p;
 
-    p = -1;
     i = 0;
-    bal = 0;
-    //fprintf(stderr, "i = %d count = %d bal = %d", i, base.entity_count, bal);
-    while (i < base.entity_count && bal == 0)
+    p = 0;
+    dist = 2000;
+    while (i < base.entity_count)
     {
-        p = closestenemy(base, entity, hero);
-        fprintf(stderr, "p = %d", p);
-        if (distancetobase(i, -1, base, entity, hero, 0) < 7200 && entity[i].type == 0)
+        if (dist > distance(entity[hero_id].x, entity[hero_id].y, entity[i].x, entity[i].y) && entity[i].type == 0 && entity[i].targetted == 0)
         {
-            if (distancetobase(-1 , 2, base, entity, hero, 0) < 1280)
-            {
-                bal = 1;
-            }
-            else if ((entity[i].threat_for == 2 || entity[i].near_base == 1) && distancetobase(-1 , 2, base, entity, hero, 0) < 2200)
-            {
-                bal = 2;
-            }
-        }
-        else if (distancetobase(i, -1, base, entity, hero, 0) < 7200 && entity[i].type == 0)
-        {
-            if (distance(entity[i].x + entity[i].vx, entity[i].y + entity[i].vy, base.e_x, base.e_y))
-            {
-                bal = 4;
-            }
-        }
-        else if (distance(hero[2].x, hero[2].y, entity[p].x, entity[p].y) < 4000 && p >= 0 && entity[p].type == 0)
-        {
-            bal = 5;
-        }
-        else 
-        {
-            bal = 0;   
+            dist = distance(entity[hero_id].x, entity[hero_id].y, entity[i].x ,entity[i].y);
+            p = i;
         }
         i++;
     }
-    fprintf(stderr, "bal = %d", bal);
-    // if (bal == 1)
-    //     printf("WIND %d %d\n", WIDTH, HEIGHT);
-    // else if (bal == 2)
-    //     printf("shield %d\n", entity[i].id);
-    // else if ( bal == 0)
-    //     printf("MOVE %d %d\n", 15500 , 4000);
-    // else if (bal == 4)
-    //     printf("MOVE %d %d\n", entity[i].x, entity[i].y);
-    // else if (bal == 5)
-    //      printf("MOVE %d %d\n", entity[i].x, entity[i].y);
+    return (p);
 }
 
-void    baseposition(t_base base, t_entity *entity, t_hero *hero, int bas, int time)
+void threats(t_base base, t_entity *entity, t_hero *hero)
 {
-    int flag;
-    int hero_i;
-    int spell;
+    int i;
+    int dist;
+    int p;
 
-    flag = 0;
-    hero_i = 0;
-    spell = 0;
-    while(hero_i < 3)
-    {    
-        if (time > 150)
-            spell = 0;
-        if (flag == 0 && bas == 0 && spell < 2)
-            if (time > 40)
-            {
-                printf("SPELL WIND 2000 2000\n");
-                spell = 1;
-            }
-            else
-                printf("MOVE %d %d\n", 650, 650);
-        else if (flag == 1 & bas == 0 && spell < 2)
+    i = 0;
+    p = 0;
+    dist = 10000;
+    while (i < base.entity_count)
+    {
+        if (6000 > distancetobase(i, base, entity, hero, 1) && entity[i].type == 0)
         {
-            if (time > 40)
-            {
-                printf("SPELL WIND 2000 2000\n");
-                 spell = 1;
-            }
-            else
-                printf("MOVE %d %d\n", 650, 650);
+            p = entity[i].id;
+            entity[i].threat = 1;
         }
-        else if (flag == 0 && bas != 0 && spell < 2)
-            if (time > 50)
-            {
-                spell = 1;
-                printf("SPELL WIND 14211 5600\n");
-            }
-            else
-                printf("MOVE %d %d\n", WIDTH - 650, HEIGHT - 650);
-        else if (flag == 1 & bas != 0 && spell < 2)
+        //hp erbij?
+        if (3000 > distancetobase(i, base, entity, hero, 1) && entity[i].type == 0)
         {
-            if (time > 50)
-            {
-                spell = 1;
-                printf("SPELL WIND 14211 5600\n");
-            }
-            else
-                printf("MOVE %d %d\n", WIDTH - 650, HEIGHT - 650);
+            p = entity[i].id;
+            entity[i].threat = 2;
         }
-        hero_i++;
+        i++;
     }
-        //cutoff target
 }
 
-// void target(t_base base, t_entity *entity, t_hero *hero, int bas, int time)
+// void    baseposition(t_base base, t_entity *entity, t_hero *hero, int bas, int time)
 // {
-//     int i;
-//     int j;
 //     int flag;
 //     int hero_i;
-//     int k;
 //     int spell;
+
 //     flag = 0;
-//     int id_monster;
-//     int closest_hero;
-
-
-//     hero_i = 0;
-//     id_monster = 0;
-
-//     k = 0;
-//     i = 0;
-//     j = 0;
 //     hero_i = 0;
 //     spell = 0;
-//     while(life > 2 en monsters niet te dichtbij)
+//     while(hero_i < 2)
 //     {    
-//         doe om de 12 ish rondes spellshield
-//         2 man verdedigen rond de 5000 + wind
+//         if (time > 150)
+//             spell = 0;
+//         if (flag == 0 && bas == 0 && spell < 2)
+//             if (time > 40)
+//             {
+//                 printf("SPELL WIND 2000 2000\n");
+//                 spell = 1;
+//             }
+//             else
+//                 printf("MOVE %d %d\n", 650, 650);
+//         else if (flag == 1 & bas == 0 && spell < 2)
+//         {
+//             if (time > 40)
+//             {
+//                 printf("SPELL WIND 2000 2000\n");
+//                  spell = 1;
+//             }
+//             else
+//                 printf("MOVE %d %d\n", 650, 650);
+//         }
+//         else if (flag == 0 && bas != 0 && spell < 2)
+//             if (time > 50)
+//             {
+//                 spell = 1;
+//                 printf("SPELL WIND 14211 5600\n");
+//             }
+//             else
+//                 printf("MOVE %d %d\n", WIDTH - 650, HEIGHT - 650);
+//         else if (flag == 1 & bas != 0 && spell < 2)
+//         {
+//             if (time > 50)
+//             {
+//                 spell = 1;
+//                 printf("SPELL WIND 14211 5600\n");
+//             }
+//             else
+//                 printf("MOVE %d %d\n", WIDTH - 650, HEIGHT - 650);
+//         }
+//         hero_i++;
 //     }
-//     while (life < 2 of veel monsters komende)
-//     {
-//        2 defend dichterbij en windwall
-//     }
-//     while 
-//     aanvaller ziet verdedigers geen spellshield, schiet ze tegenovergestelde kant, weg van doel, van dichtste monster
-    
-//     als dat niet kan spellshield de monster en zorg dat ie op afstand blijft
-
+//         //cutoff target
 // }
 
+void early(t_base base, t_entity *entity, t_hero *hero, int bas, int time)
+{
+    int i;
+    int j;
+    int flag;
+    int hero_i;
+    int k;
+    int spell;
+    int ce;
+    flag = 0;
+    int id_monster;
+    int closest_hero;
+
+    ce = 0;
+    j = 0;
+    fprintf(stderr, "time = %d\n", time);
+    i = base.entity_count;
+    fprintf(stderr, "i = %d\n", i);
+    if (time < 7 && i < 4)
+    {
+        fprintf(stderr, "onder 7\n");
+        printf("MOVE 3500 8000\n");
+        printf("MOVE 6600 8800\n");
+        printf("MOVE 7400 800\n");
+    }
+    
+    else if (time > 6)
+    {
+        fprintf(stderr, "na 6\n");
+        j = closestenemytohero(base, entity, hero, 0);
+        ce = closestenemy(base, entity, hero);
+        fprintf(stderr, "ce = %d\n",ce);
+        fprintf(stderr, "j0 = %d\n", j);
+        if (ce == j && ce != 0)
+        {
+            //entity[j].targetted = 1;
+            printf("MOVE %d %d\n", entity[j].x, entity[j].y);
+        }
+        else if (j > 0)
+        {
+            //entity[j].targetted = 1;
+            printf("MOVE %d %d\n", entity[j].x, entity[j].y);
+        }
+        else
+        {
+            printf("MOVE 3500 8000\n");
+        }
+        j = closestenemytohero(base, entity, hero, 1);
+        fprintf(stderr, "j 1 = %d\n", j);
+        if (ce == j && ce != 0)
+        {
+            //entity[j].targetted = 1;
+            printf("MOVE %d %d\n", entity[j].x, entity[j].y);
+        }
+        else if (j > 0 )
+        {
+            //entity[j].targetted = 1;
+            printf("MOVE %d %d\n", entity[j].x, entity[j].y);
+        }
+        else
+        {
+            printf("MOVE 6600 8800\n");
+        }
+        j = closestenemytohero(base, entity, hero, 2);
+        fprintf(stderr, "j 2 = %d\n", j);
+        if (ce == j && ce != 0)
+        {
+            //entity[j].targetted = 1;
+            printf("MOVE %d %d\n", entity[j].x, entity[j].y);
+        }
+        else if (j > 0 )
+        {
+            //entity[j].targetted = 1;
+            printf("MOVE %d %d\n", entity[j].x, entity[j].y);
+        }
+        else
+        {
+            printf("MOVE 7400 800");
+        }
+    }
+}
+
+void    defense(t_base base, t_entity *entity, t_hero *hero, int time)
+{
+    int i;
+    int j;
+    int flag;
+    int hero_i;
+    int k;
+    int spell;
+    flag = 0;
+    int id_monster;
+    int closest_hero;
+
+
+    if (time < 50)
+    {
+        early(base, entity, hero, base.x, base.time);
+    }
+    else
+    {
+        printf("MOVE 650 650\n");
+        printf("MOVE 650 650\n");
+        printf("MOVE 650 650\n");
+    }
+}
+        
 int main()
 {
     t_base		base;
@@ -356,6 +426,9 @@ int main()
     int p;
     int i;
     int b;
+    int counter;
+
+    counter = 0;
 
     scanf("%d%d%d", &base.x, &base.y, &base.heroes_count);
 	if (base.x == 0 && base.y == 0)
@@ -397,8 +470,36 @@ int main()
 				b++;
 			}
 		}
-        baseposition(base, entity, hero, base.x, base.time);
-        attack(base, entity, hero);
+        counter = 0;
+        while (counter < base.entity_count)
+        {
+            if (counter > 2)
+            {
+                //fprintf(stderr, "distanceto() = %d id=%d\n", distanceto(counter, 1, base, entity, hero), entity[counter].id);
+                // fprintf(stderr, "closesthero = %d\n", closest_hero(counter, 0, base, hero, entity));
+                //fprintf(stderr, "coun=%d countent= %d x=%d y=%d\n", counter, base.entity_count, entity[counter].x, entity[counter].y);
+                //printf(stderr, "dist=%d id monster = %d\n", distancetobase(counter, base, entity, hero, 1), entity[counter].id);
+                //fprintf(stderr, "range=%d", in_range(counter, 0, base, entity, hero, 3000));
+                //count_in_range(int id, t_base base, t_entity *entity, t_hero *hero, int range)
+                //fprintf(stderr, "range=%d", count_in_range(0, base, entity, hero, 3000));
+                //hero_closest_idenemy(int id_hero, t_base base, t_hero *hero, t_entity *entity)
+                //fprintf(stderr, "hci=%d", hero_closest_counter(0, base, entity, hero));
+                //closest_hero(t_base base, t_hero *hero, t_entity *entity)
+                //fprintf(stderr, "closesthero=%d", closest_hero(counter, base, hero, entity));
+                //hero_distance_enemy(int counter, int id_hero, t_base base, t_hero *hero, t_entity *entity)
+                //fprintf(stderr, "herodistanceenemy=%d\n", hero_distance_enemy(counter, 2, base, hero, entity));
+                // int closestenemy(t_base base, t_entity *entity, t_hero *hero)
+                //fprintf(stderr, "closestenemy=%d\n", closestenemy(base, entity, hero));
+            }
+            counter++;
+        }
+        
+        threats(base, entity, hero);
+        defense(base, entity, hero, base.time);
+        //baseposition(base, entity, hero, base.x, base.time);
+        //attack(base, entity, hero);
+
+        //printf("MOVE %d %d\n", 2000, 2000);
 		free (entity);
 		base.time++;
 	}
