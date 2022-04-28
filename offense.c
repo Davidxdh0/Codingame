@@ -1,30 +1,3 @@
-void offensive(t_base base, t_entity *entity, t_hero *hero, int bas, int time)
-{
-    int flag;
-    int hero_i;
-    int spell;
-    int id_monster;
-
-    id_monster = -1;
-    flag = 0;
-    hero_i = 0;
-    spell = 0;
-
-    id_monster = closest(base, entity, hero, base.x, base.time, 1);
-    fprintf(stderr, "id offensive monster = %d", id_monster);
-    if (distance(hero[2].x, hero[2].y, entity[id_monster].vx, entity[id_monster].vy) < 1280 && entity[id_monster].type == 0 && id_monster > 0)
-        printf("wind %d %d\n", WIDTH, HEIGHT);//entity[id_monster].id);
-    else if (distance(hero[2].x, hero[2].y, base.e_x, base.e_y) > 5000)
-        printf("MOVE 14600 6000\n");
-    // else if (distance(hero[2].x, hero[2].y, entity[id_monster].vx, entity[id_monster].vy) > 2200 && id_monster > 0)
-    //     printf("MOVE %d %d\n", entity[id_monster].vx, entity[id_monster].vy);
-    else if (distance(entity[id_monster].vx, entity[id_monster].vy, base.e_x, base.e_y) < 7200)
-        printf("MOVE %d, %d", entity[id_monster].vx, entity[id_monster].vy);
-    else
-        printf("MOVE 14600 6000\n");
-    //bas 2 closest
-}
-
 void attack(t_base base, t_entity *entity, t_hero *hero)
 {
     int i;

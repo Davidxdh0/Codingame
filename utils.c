@@ -43,7 +43,7 @@ int distancetobase(int counter, int basex, t_base base, t_entity *entity, t_hero
     int distances;
 
     distances = 0;
-    if (base == )
+    if (base.x == 0)
     {
         distances = distance(entity[id_monster].x, entity[id_monster].y, entity[hero_id].y, hero_id);
     }
@@ -88,7 +88,7 @@ int hero_distance_enemy(int counter, int id_hero, t_base base, t_hero *hero, t_e
     return (j);
 }
 
-int closestenemy(t_base base, t_entity *entity, t_hero *hero)
+int closestenemy(t_base base, t_entity *entity, t_hero *hero)   
 {
     int i;
     int dist;
@@ -99,10 +99,10 @@ int closestenemy(t_base base, t_entity *entity, t_hero *hero)
     dist = 10000;
     while (i < base.entity_count)
     {
-        if (dist > distancetobase(i, -1, base, entity, hero, 1) && entity[i].type == 0 && entity[i].targetted == 0)
+        if (dist > distancetobase(i, -1, base, entity, hero, 1) && entity[i].type == 0 && entity[i].targetted != 1)
         {
             dist = distancetobase(i, -1, base, entity, hero, 1);
-            p = entity[i].id;
+            p = i;
         }
         i++;
     }
@@ -167,3 +167,23 @@ void threats(t_base base, t_entity *entity, t_hero *hero)
         i++;
     }
 }
+
+int distance(int x1, int y1, int x, int y)
+int distanceto(int id, int id_hero, int basex, int basey, t_base base, t_entity *entity, t_hero *hero)
+int in_range(int id, int id_2, t_base base, t_entity *entity, t_hero *hero, int range)
+int count_in_range(int id, t_base base, t_entity *entity, t_hero *hero, int range)
+int hero_closest_counter(int id_hero, t_base base, t_entity *entity, t_hero *hero)
+int distancetohero(int id_hero, int counter, t_base base, t_entity *entity, t_hero *hero, int mijn)
+int distancetobase(int counter, int basex, t_base base, t_entity *entity, t_hero *hero)
+int hero_closest_idenemy(int counter, int id_hero, t_base base, t_hero *hero, t_entity *entity)
+int hero_distance_enemy(int counter, int id_hero, t_base base, t_hero *hero, t_entity *entity)
+int closestenemy(t_base base, t_entity *entity, t_hero *hero)
+int closestenemytohero(t_base base, t_entity *entity, t_hero *hero, int hero_id)
+void threats(t_base base, t_entity *entity, t_hero *hero)
+
+int countthreats(t_base base, t_entity *entity, t_hero *hero)
+
+int smartwindwall(int defender, t_base base, t_entity *entity, t_hero *hero)
+int spellshield(t_base base, t_entity *entity, t_hero *hero)
+int controlspell()
+int hero_distance_enemyhero(int counter, int id_hero, t_base base, t_hero *hero, t_entity *entity)
