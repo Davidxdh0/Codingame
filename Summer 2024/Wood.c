@@ -84,7 +84,6 @@ void debugBestMove(t_CostOfMove *ledger)
 int *findObstacles(char *gpu)
 {
     int i = 0;
-	int pos = 0;
     int count = 0;
     int *array;
     while(gpu[i])
@@ -95,6 +94,7 @@ int *findObstacles(char *gpu)
     }
     array = malloc(sizeof(int) * (count + 1));
     i = 0;
+    int pos = 0;
     while(gpu[i])
     {
         if (gpu[i] == '#')
@@ -112,7 +112,7 @@ void dropPlayer(t_Game *game, t_CostOfMove *ledger)
 {
 	int cost = 0;
 	int drop = 4;
-	if (game->reg_0 + drop < game->reg_1 || game->reg_0 + drop < game->reg_2 )
+	if (game->reg_0 + drop < game->reg_1 || game->reg_0 + drop < game->reg_2 || game->reg_3 > 0)
 	{
 		ledger->right[game->id] = cost;
 		ledger->up[game->id] = cost;
