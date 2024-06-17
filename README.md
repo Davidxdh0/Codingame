@@ -1,3 +1,2 @@
-# Codingame 2310/7695
-Old code from the spring challenge. 
-Couldn't get the finished code, this is a mess.
+Spring 2022# Codingame 2310/7695
+Summer 2024# Codingame 1268/3977

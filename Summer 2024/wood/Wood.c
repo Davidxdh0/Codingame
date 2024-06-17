@@ -43,7 +43,6 @@ void printRound(t_CostOfMove *ledger, t_Game *game)
 	fprintf(stderr, "down %d, ", ledger->down[game->id]);
 	fprintf(stderr, "left %d, ", ledger->left[game->id]);
 	fprintf(stderr, "up %d\n", ledger->up[game->id]);
-
 }
 
 void debug(t_Game *game)
