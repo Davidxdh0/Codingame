@@ -516,11 +516,9 @@ int main()
 	t_Game			game;
 	t_CostOfMove	ledger;
 	
-	memset(&ledger, 0, sizeof(t_CostOfMove));
 	game.count = 0;
     while (1) {
-		int p = 0;
-		initStr(&ledger);
+		memset(&ledger, 0, sizeof(t_CostOfMove));
         for (int i = 0; i < 3; i++) {
             char score_info[65];
             scanf("%[^\n]", score_info); fgetc(stdin);
